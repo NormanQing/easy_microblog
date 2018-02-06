@@ -23,7 +23,7 @@ function connredis(){
 		return $r;
 	}
 	$r = new redis();
-	$r->connect('localhost');
+	$r->connect('127.0.0.1');
 	return $r;
 }
 

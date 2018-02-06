@@ -31,19 +31,54 @@ $postlist[$key] = $r->hmget('post:postid:'.$postid,['userid','content','time']);
 $star = $r->smembers('following:'.$user['userid']);
 $star[] = $user['userid'];
 
-$lastpull = $r->get('lastpull:userid'.$user['userid']);
+$lastpull = $r->get('lastpull:userid:'.$user['userid']);
 
 if(!$lastpull){
 	$lastpull = 0;
 }
-
 //拉取数据
+$latest = [];
 foreach($star as $s){
-	print_r($r->zrandgebyscore('starpost:userid:'.$s,$lastpull,1<<32-1));
+    $latest = array_merge($latest,$r->zrangebyscore('starpost:userid:'.$s,$lastpull+1,1<<32-1));
+
+}
+//print_r($latest);
+//更新lastpull
+
+sort($latest,SORT_NUMERIC);
+
+//如果非空才去更新
+if(!empty($latest)){
+    $r->set('lastpull:userid:'.$user['userid'],end($latest));
+}
+
+
+
+
+//循环把latet放到自己（主页）应该收取的微博链表离
+foreach($latest as $l){
+    $r->lPush('receivepost:'.$user['userid'],$l);
+}
+
+//保持个人主页最多收取1000条最新微博
+
+$r->lTrim('receivepost:'.$user['userid'],0,999);
+
+
+
+//
+$newpost = $r->sort('receivepost:'.$user['userid'],['sort'=>'desc']);
+
+$postlist = [];
+foreach($newpost as $key=>$postid){
+
+    $postlist[$key] = $r->hmget('post:postid:'.$postid,['userid','content','time','username']);
 
 }
 
-//更新lastpull
+
+
+
 
 //die;
 //计算几个粉丝，几个关注

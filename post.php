@@ -36,18 +36,6 @@ $r->set('post:postid:'.$postid.':time',time());
 $r->set('post:postid:'.$postid.':content',$content);
 */
 
-//v2.0 数据格式 hash
-$r->hmset('post:postid:'.$postid,['userid'=>$user['userid'],'username'=>$user['username'],'content'=>$content,'time'=>time()]);
-
-/**
-  v2.0 ======= 不进行推送的方式实现
-  把自己发的微博维护在一个有序集合中,只要前20个
- */
-$r->zadd('starpost:userid:'.$user['userid'],$postid,$postid);
-if($r->zcard('starpost:userid:'$user['userid']) > 20){
-	$r->zremrangbyrank('starpost:userid:'.$user['userid'],0,0);
-}
-
 /*v1.0
 //把微博推给自己的粉丝
 $fans = $r->smembers('follower:'.$user['userid']);//我的粉丝
@@ -58,6 +46,17 @@ foreach($fans as $fansid){
 */
 /**v2.0====不推了
  */
+//v2.0 数据格式 hash
+$r->hmset('post:postid:'.$postid,['userid'=>$user['userid'],'username'=>$user['username'],'content'=>$content,'time'=>time()]);
+
+/**
+v2.0 ======= 不进行推送的方式实现
+把自己发的微博维护在一个有序集合中,只要前20个
+ */
+$r->zadd('starpost:userid:'.$user['userid'],$postid,$postid);
+if($r->zcard('starpost:userid:'.$user['userid']) > 20){
+    $r->zremrangbyrank('starpost:userid:'.$user['userid'],0,0);//把最旧的删掉
+}
 
 header('location: home.php');
 
