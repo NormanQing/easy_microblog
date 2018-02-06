@@ -9,7 +9,7 @@ $i = 0;
 $sql = 'insert into post (postid,userid,username,create_time,content) values ';
 
 while($r->lLen('global:store') && $i<1000){
-    $postid = $r->lpop('global:store');
+    $postid = $r->rpop('global:store');
     $post = $r->hMGet('post:postid:'.$postid,['userid','username','time','content']);
     $sql.='("'.$postid.'","'.$post['userid'].'","'.$post['username'].'","'.$post['time'].'","'.$post['content'].'"),';
     $i++;

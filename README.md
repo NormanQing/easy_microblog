@@ -35,3 +35,6 @@ create table post(
     create_time int NOT NULL DEFAULT 0,
     content char(144)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='微博表';
+
+
+ab -c 50 -n 1000 -H 'Cookie:username=zhangsan; userid=1; authsecret=cJqbr3eDpy7xovYn' -p /www/blogpost -T 'application/x-www-form-urlencoded' http://easy_microblog.com/post.php?status=fromab

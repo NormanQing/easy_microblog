@@ -66,7 +66,7 @@ $r->lpush('mypost:userid:'.$user['userid'],$postid);
 if($r->lLen('mypost:userid:'.$user['userid']) >100){
     $r->rpoplpush('mypost:userid:'.$user['userid'],'global:store');
 }
-
+exit;
 header('location: home.php');
 
 include 'footer.php';
