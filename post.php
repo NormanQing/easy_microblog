@@ -39,7 +39,7 @@ $r->set('post:postid:'.$postid.':content',$content);
 /*v1.0
 //把微博推给自己的粉丝
 $fans = $r->smembers('follower:'.$user['userid']);//我的粉丝
-$fans[] = $user['userid'];//讲自己也加入到推送中
+$fans[] = $user['userid'];//将自己也加入到推送中
 foreach($fans as $fansid){
 	$r->lpush('recivepost:'.$fansid,$postid);
 }
@@ -51,11 +51,20 @@ $r->hmset('post:postid:'.$postid,['userid'=>$user['userid'],'username'=>$user['u
 
 /**
 v2.0 ======= 不进行推送的方式实现
-把自己发的微博维护在一个有序集合中,只要前20个
+把自己发的微博维护在一个有序集合中,只要前20个==》供粉丝获取用的
  */
 $r->zadd('starpost:userid:'.$user['userid'],$postid,$postid);
 if($r->zcard('starpost:userid:'.$user['userid']) > 20){
-    $r->zremrangbyrank('starpost:userid:'.$user['userid'],0,0);//把最旧的删掉
+    $r->zRemRangeByRank('starpost:userid:'.$user['userid'],0,0);//把最旧的删掉
+}
+
+// 再把自己的微博ID放到链表里，自己看自己微博用的
+//1000个微博之前的，要放到mysql里
+
+$r->lpush('mypost:userid:'.$user['userid'],$postid);
+
+if($r->lLen('mypost:userid:'.$user['userid']) >100){
+    $r->rpoplpush('mypost:userid:'.$user['userid'],'global:store');
 }
 
 header('location: home.php');
