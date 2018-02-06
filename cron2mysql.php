@@ -24,7 +24,7 @@ $sql = substr($sql,0,-1);
 echo $sql;
 
 //链接mysql 并把旧微博入库
-$conn = mysqli_connect('localhost','root','wcq880820','test','3369');
+$conn = mysqli_connect('localhost','root','','test','3369');
 
 mysqli_query($conn,'set names utf8');
 $rs = mysqli_query($conn,$sql);
